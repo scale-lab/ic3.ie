@@ -47,7 +47,7 @@ To synthesize our hardware design and calculate its physical area, we need a sta
 3. Place both files in your working directory.
 
 ---
-## 1.1 Hardware Design Generation
+## 1.1 Basic design generation using LLMs 
 
 Select two LLMs. Copy and paste the following prompt into the LLM:
 
@@ -57,8 +57,6 @@ Select two LLMs. Copy and paste the following prompt into the LLM:
 > * `x`: Signed 16-bit input representing the value for integer square root computation (operational range: -32,768 to +32,767). Negative values should be handled as special cases and output 0.
 > * `y`: Unsigned 8-bit output containing the computed integer square root value (operational range: 0 to 181 for valid positive inputs, 0 for negative inputs).
   
-**Next Steps:**
-
 
 Save the generated Verilog code into a file named `signed_isqrt.v`.
 
@@ -82,8 +80,7 @@ Inspect the out, and make sure everything is marked "SUCCESS".
 If the testbench reports failures, copy the terminal errors and paste them back into the LLM. Ask it to analyze the failure and provide a corrected `signed_isqrt.v` file. Repeat this until the testbench prints `SUCCESS`.
 
 ---
-
-## 5. Synthesis and Area Optimization
+## 1.2 LLM-based PPA quality
 
 Once the design is functionally correct, we will synthesize it using **Yosys** to map the behavioral Verilog to actual logic gates and measure its silicon area.
 
@@ -119,6 +116,11 @@ yosys -s synth.ys
 
 
 3. Look at the terminal output for the `Chip area` statistic.
+
+4. Repeat steps using the design from the second LLM and contrast the design area
+
+---
+   
  
  **LLM Optimization terative Debugging (manual Agentic flow for area optimization):**
 
