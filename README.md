@@ -191,8 +191,9 @@ Prompt the Agentic coding as follows
 
 ## 2.1 From natural specs to test benches
 
-
-> The Medical Ventilator Pressure Controller (VPC) protects patient safety by continuously monitoring airway pressure and actuating an emergency relief valve whenever measured pressure exceeds safe medical limits.
+1. Prompt an LLM to generate a Verilog testbench to the following design module. Save it as tb.v
+   
+The Medical Ventilator Pressure Controller (VPC) protects patient safety by continuously monitoring airway pressure and actuating an emergency relief valve whenever measured pressure exceeds safe medical limits.
 
 **Interface Description**
 
@@ -215,6 +216,9 @@ Prompt the Agentic coding as follows
 * **REQ-5 (Synchronous Registration):** Pressure evaluation occurs on the rising edge of `clk`. Output state transitions (`valve_open`) manifest with exactly **1 clock cycle** of latency relative to changes on `pressure_in`.
 
 
+2. Compile Using Verilator
+3. Run and check the output
+   
 ---
 ## 2.2 Verification using Python 
 
