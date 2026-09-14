@@ -56,29 +56,11 @@ Select two LLMs. Copy and paste the following prompt into the LLM:
 > **Specifications:**
 > * `x`: Signed 16-bit input representing the value for integer square root computation (operational range: -32,768 to +32,767). Negative values should be handled as special cases and output 0.
 > * `y`: Unsigned 8-bit output containing the computed integer square root value (operational range: 0 to 181 for valid positive inputs, 0 for negative inputs).
-
-You can experiment with Chain-of-Thought (CoT) techniques here. For example, you can modify your prompt to be as follows.
-
-> **Prompt for LLM:**
->You are an expert digital IC design engineer. Your task is to design a Verilog module for [INSERT SPECIFICATION from earlier]. 
->
->To ensure the design is synthesizable and bug-free, you must think step-by-step. Do not output the final Verilog code until you have completed the following steps:
->
-> 1. **Signal Analysis:** List all I/O ports with names, directions, and bit-widths.
-> 2. **Block Diagram & Architecture:** Describe the internal registers, counters, and data paths needed.
-> 3. **FSM Breakdown (if applicable):** Define the states, next-state logic conditions, and output logic. 
-> 4. **Timing & Edge Considerations:** Explicitly state how reset (sync vs async) and clock edges are handled.
-> 5. **Before Verilog Generation** List assumptions, invariants, safety properties,  reset behavior, and List clock-domain assumptions.
-> 6. **Verilog Generation:** Finally, provide the complete, well-commented Verilog code based *only* on the steps above. 
-
   
 **Next Steps:**
 
-1. Save the generated Verilog code into a file named `signed_isqrt.v`.
 
----
-
-## 4. Initial Simulation & Debugging (Verilator)
+Save the generated Verilog code into a file named `signed_isqrt.v`.
 
 Before synthesizing, we must ensure the LLM's design is functionally correct. We will use Verilator to compile and run the provided testbench against the generated design.
 
@@ -139,6 +121,21 @@ yosys -s synth.ys
 3. Look at the terminal output for the `Chip area` statistic.
  
  **LLM Optimization terative Debugging (manual Agentic flow for area optimization):**
+
+You can experiment with Chain-of-Thought (CoT) techniques here. For example, you can modify your prompt to be as follows.
+
+> **Prompt for LLM:**
+>You are an expert digital IC design engineer. Your task is to design a Verilog module for [INSERT SPECIFICATION from earlier]. 
+>
+>To ensure the design is synthesizable and bug-free, you must think step-by-step. Do not output the final Verilog code until you have completed the following steps:
+>
+> 1. **Signal Analysis:** List all I/O ports with names, directions, and bit-widths.
+> 2. **Block Diagram & Architecture:** Describe the internal registers, counters, and data paths needed.
+> 3. **FSM Breakdown (if applicable):** Define the states, next-state logic conditions, and output logic. 
+> 4. **Timing & Edge Considerations:** Explicitly state how reset (sync vs async) and clock edges are handled.
+> 5. **Before Verilog Generation** List assumptions, invariants, safety properties,  reset behavior, and List clock-domain assumptions.
+> 6. **Verilog Generation:** Finally, provide the complete, well-commented Verilog code based *only* on the steps above. 
+
    
 4. Go back to your LLM and prompt:
 > Here is my working Verilog code and design area. Optimize the algorithm to use fewer hardware resources (smaller area) while maintaining functional correctness"
