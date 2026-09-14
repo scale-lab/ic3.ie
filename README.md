@@ -143,7 +143,7 @@ yosys -s script1.ys
 Go back to the LLM and prompt:
 > Here is my working Verilog code and design area. Optimize the algorithm to use fewer hardware resources (smaller area) while maintaining functional correctness
 
-Save your code, re-verify with Verilator (Demp 1), and re-run Yosys (Demo 2) to see how much the LLM reduced your design area!
+Save your code, re-verify with Verilator (1.1), and re-run Yosys (1.2) to see how much the LLM reduced your design area!
 
 Try various prompting and CoT strategies to further reduce the area, until you cannot get further improvements. For example, try
 
