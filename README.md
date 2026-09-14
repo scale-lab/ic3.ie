@@ -191,8 +191,10 @@ Prompt the Agentic coding as follows
 
 ## 2.1 From natural specs to test benches
 
-1. Prompt an LLM to generate a Verilog testbench to the following design module. Save it as tb.v
-   
+1. Prompt an LLM:
+
+Generate a Verilog testbench to a  design module ventilator_control.v with the following specs  
+
 The Medical Ventilator Pressure Controller (VPC) protects patient safety by continuously monitoring airway pressure and actuating an emergency relief valve whenever measured pressure exceeds safe medical limits.
 
 **Interface Description**
@@ -227,7 +229,9 @@ Writing testbenches in pure Verilog can be tedious. Cocotb allows us to write ha
 Ask the LLM to generate the Python environment:
 
 > **Prompt for LLM:**
-> Write a Python testbench using cocotb for a combinational Verilog module named `signed_isqrt` to compute the integer square root of $x$, where $x$ is an input signed 16-bit integer and the output $y$ is an unsigned 8-bit integer. Include directed edge cases and randomized testing. Also, create the standard cocotb Makefile for the Icarus Verilog simulator.
+> Write a Python testbench using cocotb for a combinational Verilog module named `signed_isqrt` to compute the integer square root of $x$, where $x$ is an input signed 16-bit integer and the output $y$ is an unsigned 8-bit integer.
+>
+> Include directed edge cases and randomized testing. Also, create the standard cocotb Makefile for the Icarus Verilog simulator.
 
 **Execution:**
 
