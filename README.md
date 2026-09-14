@@ -4,7 +4,7 @@
 
 Welcome to the IC3.IE tutorial on integrating Large Language Models (LLMs) into the hardware design, synthesis, and verification lifecycle. In this tutorial, we will use an LLM to design an integer square root module, simulate it, optimize its area, and verify its coverage using industry-standard open-source tools.
 
-## 1. Environment Setup
+## Environment Setup
 
 Before we begin, ensure your system has the required open-source hardware tools installed: **Yosys** (synthesis), **Icarus Verilog** & **Verilator** (simulation), and **Cocotb** (Python-based verification).
 
@@ -38,7 +38,7 @@ pip install pytest cocotb
 # Module 1: Design Generation & Synthesis Optimization
 ---
 
-## 2. Preparing for Synthesis
+## Preparing for Synthesis
 
 To synthesize our hardware design and calculate its physical area, we need a standard cell library.
 
@@ -63,7 +63,7 @@ We will start by asking an LLM (like Gemini) to generate our baseline Verilog mo
 After logging into your selected LLM, Copy and paste the following prompt into the LLM:
 
 > **Prompt for LLM:**
-> Write a combinational Verilog module named `signed_isqrt` to compute the integer square root of $x$, where $x$ is an input signed 16-bit integer and the output $y$ is an unsigned 8-bit integer.
+> Write a synthesizable combinational Verilog module named `signed_isqrt` to compute the integer square root of $x$, where $x$ is an input signed 16-bit integer and the output $y$ is an unsigned 8-bit integer.
 > **Specifications:**
 > * `x`: Signed 16-bit input representing the value for integer square root computation (operational range: -32,768 to +32,767). Negative values should be handled as special cases and output 0.
 > * `y`: Unsigned 8-bit output containing the computed integer square root value (operational range: 0 to 181 for valid positive inputs, 0 for negative inputs).
