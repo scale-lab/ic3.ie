@@ -1,6 +1,6 @@
 
 
-# IC3.IE Tutorial: Building the Next Generation of Chips with Generative AI
+# IC3.IE Tutorial: Building the Next Generation of Chips with GenAI
 
 Welcome to the IC3.IE tutorial on integrating Large Language Models (LLMs) into the hardware design, synthesis, and verification lifecycle. In this tutorial, we will use an LLM to design an integer square root module, simulate it, optimize its area, and verify its coverage using industry-standard open-source tools.
 
