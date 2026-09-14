@@ -121,7 +121,7 @@ yosys -s synth.ys
 
 ---
    
-## 1.3: LLM-based synthesis script 
+## 1.3: LLM-based synthesis script
 
 1. Select at least two LLMs: Claude, Gemini, ChatGPT, etc
 
@@ -138,7 +138,7 @@ yosys -s script1.ys
 6. Repeat using the second LLM
 
 ---
-** Demo 1.4: Prompting with CoT for PPA optimization
+## Demo 1.4: Prompting with CoT for PPA optimization
  
 You can experiment with Chain-of-Thought (CoT) techniques here. For example, you can modify your prompt to be as follows.
 
@@ -172,7 +172,7 @@ You can experiment with Chain-of-Thought (CoT) techniques here. For example, you
 
 7.  Replace your code, re-verify with Verilator (Part 4 in this tutorial), and re-run Yosys to see how much the LLM reduced your design area!
 ---
-**Demo 1.5**
+## 1.5 Agentic PPA optimization
 
 This exercise requires integration of a coding agent in your IDE environment.
 
