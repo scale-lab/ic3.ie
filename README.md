@@ -47,20 +47,9 @@ To synthesize our hardware design and calculate its physical area, we need a sta
 3. Place both files in your working directory.
 
 ---
-## 3. Hardware Design Generation
+## 1.1 Hardware Design Generation
 
-We will start by asking an LLM (like Gemini) to generate our baseline Verilog module. First you need to select an LLM.Find your match based on the **first letter of your name**! 
-
-| First Letter | Assigned AI Platform |
-| :--- | :--- |
-| **A, B, C, F, G** | [![OpenAI](https://img.shields.io/badge/OpenAI_ChatGPT-412991?style=for-the-badge&logo=openai&logoColor=white)](https://chatgpt.com) |
-| **D, E, H, I, J, K** | [![Anthropic](https://img.shields.io/badge/Anthropic_Claude-D97706?style=for-the-badge&logo=anthropic&logoColor=white)](https://claude.ai) |
-| **L, M, N, O, P, Q, R** | [![DeepSeek](https://img.shields.io/badge/DeepSeek-4D6BFE?style=for-the-badge&logo=deepseek&logoColor=white)](https://deepseek.com) |
-| **S, T, U, V, W, X, Y, Z** | [![Google](https://img.shields.io/badge/Google_Gemini-8E75FF?style=for-the-badge&logo=googlegemini&logoColor=white)](https://gemini.google.com) |
-
-**As you progress in your design, make sure to track your metrics using [this form](https://forms.gle/8HHsJmGQMyF7V9D46)**
-
-After logging into your selected LLM, Copy and paste the following prompt into the LLM:
+Select two LLMs. Copy and paste the following prompt into the LLM:
 
 > **Prompt for LLM:**
 > Write a synthesizable combinational Verilog module named `signed_isqrt` to compute the integer square root of $x$, where $x$ is an input signed 16-bit integer and the output $y$ is an unsigned 8-bit integer.
