@@ -189,27 +189,58 @@ Prompt the Agentic coding as follows
 ---
 # Module 2: Design Verification
 
-## 1. Design Verification & Coverage
+## 2.1 From natural specs to test benches
 
-Testbenches rarely test every possible edge case on the first try. We will use Verilator's coverage tools to see what lines of code the testbench missed.
 
-1. Run Verilator with coverage flags enabled:
+> The Medical Ventilator Pressure Controller (VPC) protects patient safety by continuously monitoring airway pressure and actuating an emergency relief valve whenever measured pressure exceeds safe medical limits.
+
+**Interface Description**
+
+| Signal Name | Direction | Bit Width | Type | Description |
+| --- | --- | --- | --- | --- |
+| `clk` | Input | 1 | Wire | Master system clock signal. |
+| `rst_n` | Input | 1 | Wire | Active-low asynchronous global reset. |
+| `pressure_in` | Input | 8 | Unsigned Wire | Current measured airway pressure in $\text{cmH}_2\text{O}$ (range: 0 to 255). |
+| `valve_open` | Output | 1 | Register | Relief valve actuation signal (1 = Open, 0 = Closed). |
+
+**Functional Requirements**
+
+* **REQ-1 (Active-Low Reset):** When `rst_n` is driven low (`0`), `valve_open` must immediately deassert to `0` (closed valve), overriding any pressure conditions.
+* **REQ-2 (Overpressure Relief):** When `pressure_in` strictly exceeds the safe maximum threshold ($P_{max} = 100\text{ cmH}_2\text{O}$), the module must assert `valve_open` high (`1`) to release pressure.
+* **REQ-3 (Normal Operation):** When `pressure_in` is less than or equal to $100\text{ cmH}_2\text{O}$, the module must maintain `valve_open` low (`0`).
+* **REQ-4 (Data Representation):** The input `pressure_in` operates as an unsigned 8-bit bus, accommodating pressure measurements up to $255\text{ cmH}_2\text{O}$.
+
+**Timing & Output Latency**
+
+* **REQ-5 (Synchronous Registration):** Pressure evaluation occurs on the rising edge of `clk`. Output state transitions (`valve_open`) manifest with exactly **1 clock cycle** of latency relative to changes on `pressure_in`.
+
+
+---
+## 2.2 Verification using Python 
+
+Writing testbenches in pure Verilog can be tedious. Cocotb allows us to write hardware testbenches using Python, taking advantage of Python's math libraries for reference models.
+
+Ask the LLM to generate the Python environment:
+
+> **Prompt for LLM:**
+> Write a Python testbench using cocotb for a combinational Verilog module named `signed_isqrt` to compute the integer square root of $x$, where $x$ is an input signed 16-bit integer and the output $y$ is an unsigned 8-bit integer. Include directed edge cases and randomized testing. Also, create the standard cocotb Makefile for the Icarus Verilog simulator.
+
+**Execution:**
+
+1. Save the Python code to `test_signed_isqrt.py`.
+2. Save the Makefile code to `Makefile`. *(Ensure the `MODULE` and `TOPLEVEL` variables in the Makefile correctly match your filenames).*
+3. Run the simulation using Icarus Verilog:
 ```bash
-verilator -Wno-LATCH -Wno-WIDTH --binary -j 0 --coverage --coverage-line --coverage-toggle --top-module signed_isqrt_tb problem1_tb.v signed_isqrt.v
-
-./obj_dir/Vsigned_isqrt_tb
-
-verilator_coverage --annotate report coverage.dat
+make SIM=icarus
 
 ```
 
 
-2. Check the generated `report/` directory to see which lines of Verilog were not triggered.
-**LLM Prompt (manual Agentic flow for coverage improvement):**
-3. Ask the LLM to write additional Verilog test cases targeting the uncovered lines, append them to `problem1_tb.v`, and re-test to achieve 100% coverage.
+4. If there are any `0.00ns ERROR gpi` failures, copy the traceback to the LLM and ask it to fix any port naming mismatches!
 
 ---
-## 2.2 UVM-based Verification 
+
+## 2.3 UVM-based Verification 
 
 1. First install the UVM library
 > git clone https://github.com/chipsalliance/uvm-verilator.git uvm-1800.2
@@ -241,29 +272,27 @@ max =100 cmH
 > verilator_coverage --annotate coverage_out coverage.dat
 
 8. Inspect coverage_out/ventilator_ctrl.v to check execution counts per line (lines with C0 indicate unexecuted branches).
-   
----
-## 2.3 Advanced Verification: Python & Cocotb
 
-Writing testbenches in pure Verilog can be tedious. Cocotb allows us to write hardware testbenches using Python, taking advantage of Python's math libraries for reference models.
+--- 
 
-Ask the LLM to generate the Python environment:
+## 2.4 Improving test coverage using LLMs
 
-> **Prompt for LLM:**
-> Write a Python testbench using cocotb for a combinational Verilog module named `signed_isqrt` to compute the integer square root of $x$, where $x$ is an input signed 16-bit integer and the output $y$ is an unsigned 8-bit integer. Include directed edge cases and randomized testing. Also, create the standard cocotb Makefile for the Icarus Verilog simulator.
 
-**Execution:**
+Testbenches rarely test every possible edge case on the first try. We will use Verilator's coverage tools to see what lines of code the testbench missed.
 
-1. Save the Python code to `test_signed_isqrt.py`.
-2. Save the Makefile code to `Makefile`. *(Ensure the `MODULE` and `TOPLEVEL` variables in the Makefile correctly match your filenames).*
-3. Run the simulation using Icarus Verilog:
+1. Run Verilator with coverage flags enabled:
 ```bash
-make SIM=icarus
+verilator -Wno-LATCH -Wno-WIDTH --binary -j 0 --coverage --coverage-line --coverage-toggle --top-module signed_isqrt_tb problem1_tb.v signed_isqrt.v
+
+./obj_dir/Vsigned_isqrt_tb
+
+verilator_coverage --annotate report coverage.dat
 
 ```
 
 
-4. If there are any `0.00ns ERROR gpi` failures, copy the traceback to the LLM and ask it to fix any port naming mismatches!
+2. Check the generated `report/` directory to see which lines of Verilog were not triggered.
+**LLM Prompt (manual Agentic flow for coverage improvement):**
+3. Ask the LLM to write additional Verilog test cases targeting the uncovered lines, append them to `problem1_tb.v`, and re-test to achieve 100% coverage.
 
----
 
