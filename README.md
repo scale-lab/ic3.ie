@@ -209,8 +209,41 @@ verilator_coverage --annotate report coverage.dat
 3. Ask the LLM to write additional Verilog test cases targeting the uncovered lines, append them to `problem1_tb.v`, and re-test to achieve 100% coverage.
 
 ---
+## 2.2 UVM-based Verification 
 
-## 2. Advanced Verification: Python & Cocotb
+1. First install the UVM library
+> git clone https://github.com/chipsalliance/uvm-verilator.git uvm-1800.2
+> export UVM_HOME=$(pwd)/uvm-1800.2/src
+
+2. Download ventilator_ctrl.v, which is a simple sequential circuit that triggers a relief valve when pressure exceeds P 
+max =100 cmH
+
+3. Provide ventilator_ctrl.v to the LLM and use the following prompt to generate it
+
+ > Create a UVM Testbench for the design ventilator_ctrl.v. The test bench will be simulated using Verilator 
+​
+4. Save the UVM test bench as tb_uvm.sv
+
+ 5. Compile the design and the testbench using Verilator
+
+> verilator -Wno-fatal --binary -j $(sysctl -n hw.ncpu) --coverage \
+  --top-module tb_top \
+  +incdir+$UVM_HOME \
+  +define+UVM_NO_DPI \
+  $UVM_HOME/uvm_pkg.sv \
+  ventilator_ctrl.v tb_uvm.sv
+
+6. Execute
+> ./obj_dir/Vtb_top +UVM_TESTNAME=ventilator_test
+
+7. Check the output and ensure an all PASS, and for coverage
+
+> verilator_coverage --annotate coverage_out coverage.dat
+
+8. Inspect coverage_out/ventilator_ctrl.v to check execution counts per line (lines with C0 indicate unexecuted branches).
+   
+---
+## 2.3 Advanced Verification: Python & Cocotb
 
 Writing testbenches in pure Verilog can be tedious. Cocotb allows us to write hardware testbenches using Python, taking advantage of Python's math libraries for reference models.
 
