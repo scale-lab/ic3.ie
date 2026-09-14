@@ -121,9 +121,25 @@ yosys -s synth.ys
 
 ---
    
- 
- **LLM Optimization terative Debugging (manual Agentic flow for area optimization):**
+## 1.3: LLM-based synthesis script 
 
+1. Select at least two LLMs: Claude, Gemini, ChatGPT, etc
+
+2. Prompt the LLM: 
+Generate a Yosys synthesis script to aggressively optimize the area of module named signed_isqrt.v in the design file signed_isqrt.v using the library gscl45nm.lib
+
+3. Save the script as script1.ys
+
+4. Run the synthesis tool using the library  and identify the total design area
+yosys -s script1.ys
+
+5. Compare the design area to the output from  1.2. Do you see improvement?
+
+6. Repeat using the second LLM
+
+---
+** Demo 1.4: Prompting with CoT for PPA optimization
+ 
 You can experiment with Chain-of-Thought (CoT) techniques here. For example, you can modify your prompt to be as follows.
 
 > **Prompt for LLM:**
@@ -155,6 +171,27 @@ You can experiment with Chain-of-Thought (CoT) techniques here. For example, you
 > 5. **Optimized Verilog:** Rewrite the Verilog code incorporating all the area-saving strategies identified above. Include comments explaining where resources were shared.
 
 7.  Replace your code, re-verify with Verilator (Part 4 in this tutorial), and re-run Yosys to see how much the LLM reduced your design area!
+---
+**Demo 1.5**
+
+This exercise requires integration of a coding agent in your IDE environment.
+
+Prompt the Agentic coding as follows
+
+> You are a hardware synthesis and optimization expert. 
+> Write a synthesizable combinational Verilog module named signed_isqrt to compute the integer square root of x, where x is an input signed 16-bit integer and the output y is an unsigned 8-bit integer.Specifications:
+> x: Signed 16-bit input representing the value for integer square root computation (operational range: -32,768 to +32,767). Negative values should be handled as special cases and output 0.
+> y: Unsigned 8-bit output containing the computed integer square root value (operational range: 0 to 181 for valid positive inputs, 0 for negative inputs).
+
+
+> Optimize the provided Verilog code to minimize design area without changing its functional behavior.
+
+> Ensure the design works with no errors with verilator using the testbench  Problem1_tb.v
+
+> Synthesis the design using Yosys and the lib file gscl45nm.lib, use synthesis commands that minimize area as much as possible
+
+> Extract the area metrics from the yosys output log
+> iterate through the design improving its area and the synthesis script until it is no longer possible 
 
 ---
 # Module 2: Design Verification
