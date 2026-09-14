@@ -148,12 +148,19 @@ Save your code, re-verify with Verilator (Demp 1), and re-run Yosys (Demo 2) to 
 Try various prompting and CoT strategies to further reduce the area, until you cannot get further improvements. For example, try
 
 > You are a hardware synthesis and optimization expert. Your goal is to optimize the provided Verilog code to minimize design area (LUTs, registers, and gate count) without changing its functional behavior.
+> 
 > Follow these steps strictly before writing any modified code:
-> Resource Identification: Analyze the current code and list every hardware resource it will infer (e.g., how many adders, multipliers, comparators, and registers of what bit-widths).
+>
+>  Resource Identification: Analyze the current code and list every hardware resource it will infer (e.g., how many adders, multipliers, comparators, and registers of what bit-widths).
+>
 > Resource Sharing Analysis: Identify operations that do not happen simultaneously. Can we reuse a single adder or multiplier across different FSM states using a multiplexer?
+>
 > Bit-Width Pruning: Look at every register, counter, and wire. Are there variables where the maximum possible value is smaller than the allocated bit-width?
+>
 > Logic Simplification: Identify redundant states in the FSM, unused default branches, or mathematical expressions that can be simplified using boolean algebra.
+>
 > Optimized Verilog: Rewrite the Verilog code incorporating all the area-saving strategies identified above. Include comments explaining where resources were shared.
+>
 > Explain how the changes you made the code map into various optimizations
 
 Replace your code, re-verify with Verilator (1.1), and re-run Yosys (1.2) to see how much the LLM reduced your design area!
