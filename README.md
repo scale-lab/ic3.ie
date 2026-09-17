@@ -193,7 +193,7 @@ Prompt the Agentic coding as follows
 
 1. Prompt an LLM:
 
-Generate a Verilog testbench to a  design module ventilator_control.v with the following specs  
+Generate a Verilog testbench ventilator_ctrl_tb  for a design with the following specifications. Assume the top module of the design under test has the name ventilator_ctrl. 
 
 The Medical Ventilator Pressure Controller (VPC) protects patient safety by continuously monitoring airway pressure and actuating an emergency relief valve whenever measured pressure exceeds safe medical limits.
 
@@ -217,34 +217,20 @@ The Medical Ventilator Pressure Controller (VPC) protects patient safety by cont
 
 * **REQ-5 (Synchronous Registration):** Pressure evaluation occurs on the rising edge of `clk`. Output state transitions (`valve_open`) manifest with exactly **1 clock cycle** of latency relative to changes on `pressure_in`.
 
+Save the LLM outcome as ventilator_ctrl_tb.v
 
-2. Compile Using Verilator
-3. Run and check the output
+2. Download the synthesizable module ventilator_ctrl.v
+3.  Compile Using Verilator
+ verilator -Wno-LATCH -Wno-WIDTH --binary --coverage --top-module ventilator_ctrl_tb ventilator_ctrl_tb.v ventilator_ctrl.v
+4. Run and check the output
+5. Generate the coverage report
+ verilator_coverage --annotate coverage_out coverage.dat
+6. Inspect coverage_out/ventilator_ctrl.v to check execution counts per line (lines with C0 indicate unexecuted branches).
+
    
 ---
-## 2.2 Verification using Python 
+## 2.2 Verification using Verilog + Python 
 
-Writing testbenches in pure Verilog can be tedious. Cocotb allows us to write hardware testbenches using Python, taking advantage of Python's math libraries for reference models.
-
-Ask the LLM to generate the Python environment:
-
-> **Prompt for LLM:**
-> Write a Python testbench using cocotb for a combinational Verilog module named `signed_isqrt` to compute the integer square root of $x$, where $x$ is an input signed 16-bit integer and the output $y$ is an unsigned 8-bit integer.
->
-> Include directed edge cases and randomized testing. Also, create the standard cocotb Makefile for the Icarus Verilog simulator.
-
-**Execution:**
-
-1. Save the Python code to `test_signed_isqrt.py`.
-2. Save the Makefile code to `Makefile`. *(Ensure the `MODULE` and `TOPLEVEL` variables in the Makefile correctly match your filenames).*
-3. Run the simulation using Icarus Verilog:
-```bash
-make SIM=icarus
-
-```
-
-
-4. If there are any `0.00ns ERROR gpi` failures, copy the traceback to the LLM and ask it to fix any port naming mismatches!
 
 ---
 
@@ -254,16 +240,13 @@ make SIM=icarus
 > git clone https://github.com/chipsalliance/uvm-verilator.git uvm-1800.2
 > export UVM_HOME=$(pwd)/uvm-1800.2/src
 
-2. Download ventilator_ctrl.v, which is a simple sequential circuit that triggers a relief valve when pressure exceeds P 
-max =100 cmH
+2.
+ > Create a systemverilog-based UVM Testbench for the design with the following specifications. The test bench will be simulated using Verilator 
+(copy here the specifications from Demo 1.1)​
 
-3. Provide ventilator_ctrl.v to the LLM and use the following prompt to generate it
+3. Save the UVM test bench as tb_uvm.sv
 
- > Create a UVM Testbench for the design ventilator_ctrl.v. The test bench will be simulated using Verilator 
-​
-4. Save the UVM test bench as tb_uvm.sv
-
- 5. Compile the design and the testbench using Verilator
+4. Compile the design and the testbench using Verilator
 
 > verilator -Wno-fatal --binary -j $(sysctl -n hw.ncpu) --coverage \
   --top-module tb_top \
@@ -272,14 +255,14 @@ max =100 cmH
   $UVM_HOME/uvm_pkg.sv \
   ventilator_ctrl.v tb_uvm.sv
 
-6. Execute
+5. Execute
 > ./obj_dir/Vtb_top +UVM_TESTNAME=ventilator_test
 
-7. Check the output and ensure an all PASS, and for coverage
+6. Check the output and ensure an all PASS, and for coverage
 
 > verilator_coverage --annotate coverage_out coverage.dat
 
-8. Inspect coverage_out/ventilator_ctrl.v to check execution counts per line (lines with C0 indicate unexecuted branches).
+7. Inspect coverage_out/ventilator_ctrl.v to check execution counts per line (lines with C0 indicate unexecuted branches).
 
 --- 
 
