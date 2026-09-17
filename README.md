@@ -460,7 +460,7 @@ python3 run_crc8_tb_verilator.py
 > 
 > export UVM_HOME=$(pwd)/uvm-1800.2/src
 
-2. Create a systemverilog-based UVM Testbench for the design with the following specifications. The test bench will be simulated using Verilator 
+2. Prompt the LLM to create a systemverilog-based UVM Testbench for the design with the  specifications given below. The test bench will be simulated using Verilator 
 (copy here the specifications from Demo 1.1)​
 
 3. Save the UVM test bench as tb_uvm.sv
