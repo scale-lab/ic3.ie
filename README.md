@@ -483,7 +483,7 @@ python3 run_crc8_tb_verilator.py
 
 --- 
 
-## 2.4 Improving test coverage using LLMs
+## 2.5 Improving test coverage with Agentic flows
 
 
 Testbenches rarely test every possible edge case on the first try. We will use Verilator's coverage tools to see what lines of code the testbench missed.
