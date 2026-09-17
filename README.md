@@ -231,6 +231,8 @@ Save the LLM outcome as ventilator_ctrl_tb.v
 ---
 ## 2.2 Verification using Verilog + Python 
 
+### Step 1 — Prompt the LLM to write the Verilog testbench
+
 > Design a synthesizable Verilog module named `crc8` that computes an
 > 8-bit CRC over a stream of bytes, one byte per clock cycle.
 >
