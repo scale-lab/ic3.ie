@@ -366,22 +366,6 @@ verilator --binary --timing -Wno-fatal \
 python3 check_crc8_golden.py
 ```
 
-Or, as a single convenience script:
-
-```bash
-./run_crc8_verilog_flow_verilator.sh
-```
-
-**Expected final output:**
-
-```
-TOTAL=302 PASS=302 FAIL=0
-All rows match the Python golden reference.
-```
-
-(302 = 1 standard vector + 1 empty message + 256 exhaustive single-byte
-messages + 40 random messages + 4 fixed back-to-back messages, per the
-spec's required test coverage.)
 
 
 ---
