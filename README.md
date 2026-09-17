@@ -231,10 +231,165 @@ Save the LLM outcome as ventilator_ctrl_tb.v
 ---
 ## 2.2 Verification using Verilog + Python 
 
+> Design a synthesizable Verilog module named `crc8` that computes an
+> 8-bit CRC over a stream of bytes, one byte per clock cycle.
+>
+> **Algorithm**: Standard CRC-8 (as catalogued by the CRC RevEng
+> database), defined by:
+> - Polynomial: `0x07` (representing `x^8 + x^2 + x + 1`, top bit
+>   implicit)
+> - Initial value: `0x00`
+> - Input reflection: none (process each byte MSB-first)
+> - Output reflection: none
+> - Final XOR: none
+> - Reference self-check: `CRC8("123456789") == 0xF4`
+>
+> **Interface**:
+> ```
+> module crc8 (
+>     input        clk,
+>     input        rst_n,     // active-low synchronous reset
+>     input        valid,     // pulse: data_in holds a new byte this cycle
+>     input  [7:0] data_in,   // next byte of the message
+>     output [7:0] crc_out    // running CRC value (registered)
+> );
+> ```
+>
+> **Behavior**:
+> - On `rst_n == 0`, the internal CRC register synchronously clears to
+>   `0x00`.
+> - On each rising edge of `clk` where `valid == 1`, fold `data_in` into
+>   the running CRC register using the standard bit-serial CRC update
+>   (MSB-first, 8 steps, XOR with the polynomial `0x07` whenever the
+>   top bit of the shifted register disagrees with the incoming data
+>   bit), fully unrolled into one combinational function evaluated once
+>   per byte. `crc_out` is the registered result.
+> - When `valid == 0`, `crc_out` holds its previous value.
+> - To checksum a whole message: reset once, then present each byte for
+>   one cycle each, in order. After the last byte's cycle, `crc_out` is
+>   the final checksum.
+>
+> **Required test coverage** (used to shape the verification, regardless
+> of which testbench style is used):
+> 1. Reset value is `0x00`.
+> 2. Standard check vector `"123456789"` → `0xF4`.
+> 3. Empty message (no bytes) leaves `crc_out` at `0x00`.
+> 4. Exhaustive sweep of all 256 single-byte messages.
+> 5. A batch of randomized multi-byte messages (varying length).
+> 6. Back-to-back messages with a reset between them, to confirm no
+>    state leaks across messages.
+
+```
+Using the CRC-8 functional specification above, write a self-checking
+*stimulus* Verilog testbench named crc8_tb.v for a DUT module `crc8`
+(interface as specified). Requirements:
+
+- Do NOT compute or check any CRC value inside this Verilog file — no
+  golden-model logic in Verilog at all. This testbench's only job is to
+  drive the DUT and record what it produces.
+- Generate a 10ns-period clock and implement task `reset_dut` and task
+  `send_byte(byte)` that pulses `valid` for exactly one cycle per byte,
+  matching the interface timing in the spec.
+- Implement the 6 required test-coverage cases from the spec as a
+  sequence of messages (standard check vector, empty message, all 256
+  single-byte messages, ~40 randomized multi-byte messages using
+  $random with a fixed seed for reproducibility, and a few fixed
+  back-to-back messages).
+- For every message: reset, stream the message in, then write one line
+  to an output file `crc8_verilog_results.txt` of the form
+  `<message_as_hex>,<captured_crc_out_as_hex>` (empty hex string for the
+  empty message).
+- Use `$fopen`/`$fwrite`/`$fclose` and call `$finish` at the end.
+```
+
+### Step 2 — Prompt the LLM to write the synthesizable DUT
+
+```
+Using the CRC-8 functional specification above, write the synthesizable
+Verilog module crc8.v implementing exactly the described interface and
+behavior:
+- Fully combinational per-byte CRC update (8 bit-serial XOR/shift steps
+  unrolled into one always @(*) block, MSB-first, polynomial 0x07),
+  registered once per clock cycle on `posedge clk`.
+- Synchronous active-low reset (`rst_n`) clearing the register to 0x00.
+- Register updates only when `valid` is high; holds otherwise.
+- No latches, no combinational output path bypassing the register —
+  crc_out must be a registered output.
+```
+
+### Step 3 — Prompt the LLM to write the Python golden-model checker
+
+```
+Write a standalone Python script check_crc8_golden.py (no cocotb, no
+simulator dependency) that:
+
+- Reads crc8_verilog_results.txt, where each line is
+  <message_hex>,<captured_crc_hex> (message_hex may be empty).
+- Uses the third-party `crc8` PyPI package as the golden reference
+  (pip install crc8) to compute the expected CRC-8 of each message —
+  do not hand-roll the CRC polynomial math in Python; that would defeat
+  the purpose of using an independent reference.
+- For every line, prints PASS/FAIL comparing the DUT's captured value
+  against the golden value.
+- Prints a final TOTAL/PASS/FAIL summary line.
+- Exits with code 0 if all rows match, exits 1 (with a list of failing
+  rows) if any mismatch.
+```
+
+Install the golden-model dependency once:
+
+```bash
+pip install crc8
+```
+
+### Step 4 — Run Verilator and produce the final validation output
+
+Verilator can compile the self-contained Verilog testbench directly into
+a standalone executable — no separate C++ harness is needed here because
+`crc8_tb.v` already drives itself with an `initial` block and `$finish`.
+
+```bash
+# Build crc8.v + crc8_tb.v into a Verilator binary.
+# --timing is required because crc8_tb.v uses `#5` clock delays.
+# -Wno-fatal keeps lint warnings (e.g. missing timescale) from
+# stopping the build; they don't affect functional correctness here.
+verilator --binary --timing -Wno-fatal \
+    --top-module crc8_tb \
+    -o crc8_tb_sim \
+    --Mdir obj_dir_crc8_tb \
+    crc8.v crc8_tb.v
+
+# Run the simulation. This produces crc8_verilog_results.txt.
+./obj_dir_crc8_tb/crc8_tb_sim
+
+# Grade the captured results against the Python golden model.
+python3 check_crc8_golden.py
+```
+
+Or, as a single convenience script:
+
+```bash
+./run_crc8_verilog_flow_verilator.sh
+```
+
+**Expected final output:**
+
+```
+TOTAL=302 PASS=302 FAIL=0
+All rows match the Python golden reference.
+```
+
+(302 = 1 standard vector + 1 empty message + 256 exhaustive single-byte
+messages + 40 random messages + 4 fixed back-to-back messages, per the
+spec's required test coverage.)
+
+
+---
+## 2.3 Verification using Python 
 
 ---
 
-## 2.3 UVM-based Verification 
+## 2.4 UVM-based Verification 
 
 1. First install the UVM library
 > git clone https://github.com/chipsalliance/uvm-verilator.git uvm-1800.2
