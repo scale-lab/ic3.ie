@@ -369,7 +369,7 @@ python3 check_crc8_golden.py
 
 
 ---
-## 2.3 Verification using Python 
+## 2.3 Verification using Python and Cocotb
 
 ---
 
