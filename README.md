@@ -457,6 +457,7 @@ python3 run_crc8_tb_verilator.py
 
 1. First install the UVM library
 > git clone https://github.com/chipsalliance/uvm-verilator.git uvm-1800.2
+> 
 > export UVM_HOME=$(pwd)/uvm-1800.2/src
 
 2.
