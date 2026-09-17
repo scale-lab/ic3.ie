@@ -189,7 +189,7 @@ Prompt the Agentic coding as follows
 ---
 # Module 2: Design Verification
 
-## 2.1 From natural specs to test benches
+## 2.1 Generating test benches from  Natural Specs 
 
 1. Prompt an LLM:
 
