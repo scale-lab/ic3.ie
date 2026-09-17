@@ -371,6 +371,84 @@ python3 check_crc8_golden.py
 ---
 ## 2.3 Verification using Python and Cocotb
 
+Same spec, same DUT. This time the testbench driving the DUT and the
+golden-model comparison both live in one Python file executed by cocotb,
+with no intermediate results file.
+
+### Step 1 — Prompt the LLM to write the cocotb testbench + golden model
+
+```
+Using the CRC-8 functional specification above, write a cocotb testbench
+test_crc8.py for a DUT module `crc8` (interface as specified). Requirements:
+
+- Golden reference model: a small function golden_crc8(message: bytes) ->
+  int that uses the third-party `crc8` PyPI package (pip install crc8)
+  to compute the expected checksum. Do not hand-roll the CRC polynomial
+  math — the golden model must be independent of however the DUT is
+  implemented.
+- Helper coroutines: start_clock(dut) (10ns period), reset_dut(dut)
+  (drive rst_n low then high, synchronized to the clock), send_byte(dut,
+  byte) (drive data_in + pulse valid for one clock cycle), and
+  send_message(dut, message: bytes) (send every byte of a message, then
+  wait one extra idle clock cycle so the DUT's registered crc_out has
+  settled before the caller reads it — reading crc_out on the same
+  RisingEdge that triggers the update races the simulator's non-blocking
+  assignment region).
+- Implement one @cocotb.test() per required test-coverage case from the
+  spec: reset value, standard check vector "123456789" == 0xF4, empty
+  message, exhaustive sweep of all 256 single-byte messages, ~40
+  randomized multi-byte messages (use Python's random module with a
+  fixed seed for reproducibility), and back-to-back messages with resets
+  between them to confirm no state leaks.
+- Every test must assert dut.crc_out.value against golden_crc8(...) for
+  the same message, with a clear failure message showing both values in
+  hex on mismatch.
+```
+
+### Step 2 — Prompt the LLM to write the synthesizable DUT
+
+Identical to Tutorial 1, Step 2 — the DUT is verification-style-agnostic:
+
+```
+Using the CRC-8 functional specification above, write the synthesizable
+Verilog module crc8.v implementing exactly the described interface and
+behavior:
+- Fully combinational per-byte CRC update (8 bit-serial XOR/shift steps
+  unrolled into one always @(*) block, MSB-first, polynomial 0x07),
+  registered once per clock cycle on `posedge clk`.
+- Synchronous active-low reset (`rst_n`) clearing the register to 0x00.
+- Register updates only when `valid` is high; holds otherwise.
+- No latches, no combinational output path bypassing the register —
+  crc_out must be a registered output.
+```
+
+(If you already built `crc8.v` in Tutorial 1, reuse it as-is — it's the
+same DUT regardless of which testbench style verifies it.)
+
+### Step 3 — Prompt the LLM to write the cocotb + Verilator runner script
+
+```
+Write a Python script run_crc8_tb_verilator.py that uses cocotb's
+cocotb_tools.runner API to:
+- Get a Verilator runner via get_runner("verilator").
+- Build crc8.v with hdl_toplevel="crc8", into build_dir
+  "sim_build_crc8_verilator", with timescale=("1ns", "1ps") (Verilator
+  needs an explicit timescale since crc8.v has no `timescale directive
+  and the testbench clock period is specified in nanoseconds).
+- Run runner.test() with hdl_toplevel="crc8", test_module="test_crc8",
+  the same build_dir, test_dir set to the script's own directory, and
+  the same timescale.
+```
+
+### Step 4 — Run Verilator + cocotb and produce the final validation output
+
+```bash
+pip install cocotb crc8
+python3 run_crc8_tb_verilator.py
+```
+
+
+
 ---
 
 ## 2.4 UVM-based Verification 
