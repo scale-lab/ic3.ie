@@ -513,74 +513,76 @@ python3 run_crc8_tb_verilator.py
 > Identify all inputs, outputs, interfaces, clock/reset behavior, timing requirements, functional behavior, state transitions, constraints, error conditions, and corner cases.
 > Convert each requirement into an explicit, testable verification requirement.
 > Do not invent behavior that is not supported by the specification.
-2. Define Expected Behavior
-Develop a functional reference model/golden model that independently represents what the DUT should produce.
-Determine what outputs should be checked for each input sequence.
-Define expected behavior for normal operation, boundary conditions, error cases, and corner cases.
-Explicitly identify any ambiguous parts of the specification.
-3. Generate Test Stimulus
-
-Create a combination of:
-
-Directed tests for important requirements and known scenarios.
-Constrained-random tests to explore a wider input space.
-Boundary-value and corner-case tests.
-Reset and initialization tests.
-Back-to-back and timing-sensitive transactions.
-Illegal or error-condition tests when specified.
-4. Generate Checkers
-Create a scoreboard/reference-model mechanism that compares DUT outputs against expected results.
-Generate SystemVerilog assertions for temporal, protocol, and safety requirements.
-Check for incorrect outputs, missing responses, unexpected responses, protocol violations, and incorrect state transitions.
-Every important specification requirement should have at least one corresponding checking mechanism.
-5. Generate Functional Coverage
-
-Create a coverage model that measures whether the important requirements have actually been exercised:
-
-Input-value and boundary coverage.
-Functional scenario coverage.
-State and state-transition coverage.
-Protocol and transaction coverage.
-Error and corner-case coverage.
-Cross coverage for important combinations of conditions.
-Assertion coverage where appropriate.
-
-Also identify coverage holes and generate additional stimulus when necessary to close them.
-
-6. Verification Feedback Loop
-
-Treat testbench generation as an iterative process:
-
-Generate → Compile → Simulate → Check → Measure Coverage → Improve
-
-After each simulation:
-
-Analyze compilation errors and warnings.
-Analyze assertion failures and scoreboard mismatches.
-Identify uncovered requirements and scenarios.
-Modify or add tests to address failures and coverage gaps.
-Avoid generating redundant tests that do not improve verification coverage.
-7. Requirement-to-Test Traceability
-
-Produce a table mapping:
-
-Natural-Language Requirement → Test Scenario → Stimulus → Checker/Assertion → Coverage Metric
-
-This ensures that every important specification requirement is both tested and measured.
-
-8. Final Output
-
-Generate:
-
-The complete Verilog/SystemVerilog testbench.
-The functional reference model.
-Assertions and checkers.
-Functional coverage definitions.
-Directed and constrained-random test scenarios.
-A requirement-to-verification traceability table.
-A list of assumptions or ambiguities in the specification.
-
-Primary objective: Generate a testbench that verifies functional correctness and specification compliance, not merely one that produces high code coverage. The testbench should maximize meaningful bug detection and coverage while minimizing redundant simulation.
+> **2. Define Expected Behavior**
+> Develop a functional reference model/golden model that independently represents what the DUT should produce.
+> Determine what outputs should be checked for each input sequence.
+> Define expected behavior for normal operation, boundary conditions, error cases, and corner cases.
+> Explicitly identify any ambiguous parts of the specification.
+>
+> **3. Generate Test Stimulus**
+>
+> Create a combination of:
+>
+> Directed tests for important requirements and known scenarios.
+> Constrained-random tests to explore a wider input space.
+> Boundary-value and corner-case tests.
+> Reset and initialization tests.
+> Back-to-back and timing-sensitive transactions.
+> Illegal or error-condition tests when specified.
+>
+> **4. Generate Checkers**
+> Create a scoreboard/reference-model mechanism that compares DUT outputs against expected results.
+> Generate SystemVerilog assertions for temporal, protocol, and safety requirements.
+> Check for incorrect outputs, missing responses, unexpected responses, protocol violations, and incorrect state transitions.
+> Every important specification requirement should have at least one corresponding checking mechanism.
+>
+> **5. Generate Functional Coverage**
+>
+> Create a coverage model that measures whether the important requirements have actually been exercised:
+>
+> Input-value and boundary coverage.
+> Functional scenario coverage.
+> State and state-transition coverage.
+> Protocol and transaction coverage.
+> Error and corner-case coverage.
+> Cross coverage for important combinations of conditions.
+> Assertion coverage where appropriate.
+>
+> Also identify coverage holes and generate additional stimulus when necessary to close them.
+>
+> **6. Verification Feedback Loop**
+>
+> Treat testbench generation as an iterative process:
+>
+> **Generate → Compile → Simulate → Check → Measure Coverage → Improve**
+>
+> After each simulation:
+>
+> Analyze compilation errors and warnings.
+> Analyze assertion failures and scoreboard mismatches.
+> Identify uncovered requirements and scenarios.
+> Modify or add tests to address failures and coverage gaps.
+> Avoid generating redundant tests that do not improve verification coverage.
+>
+> **7. Requirement-to-Test Traceability**
+>
+> Produce a table mapping:
+>
+> **Natural-Language Requirement → Test Scenario → Stimulus → Checker/Assertion → Coverage Metric**
+>
+> This ensures that every important specification requirement is both **tested and measured**.
+>
+> **8. Final Output**
+>
+> Generate:
+>
+> The complete Verilog/SystemVerilog testbench.
+> The functional reference model.
+> Assertions and checkers.
+> Functional coverage definitions.
+> Directed and constrained-random test scenarios.
+> A requirement-to-verification traceability table.
+> A list of assumptions or ambiguities in the specification.
 
 
 
