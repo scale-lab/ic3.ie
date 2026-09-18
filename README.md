@@ -486,6 +486,8 @@ python3 run_crc8_tb_verilator.py
 --- 
 ## 2.5 Testbench generation with chain of thought
 
+1. Use this prompt to generate a testbench for the square root problem
+   
 > You are an expert hardware verification engineer. Given the natural-language hardware specification below, generate a complete Verilog testbench for the following design.
 > Natural-Language Specification:
 
@@ -496,16 +498,17 @@ python3 run_crc8_tb_verilator.py
 > x: Signed 16-bit input representing the value for integer square root computation (operational range: -32,768 to +32,767). Negative values should be handled as special cases and output 0.
 > y: Unsigned 8-bit output containing the computed integer square root value (operational range: 0 to 181 for valid positive inputs, 0 for negative inputs).
 
-2. Compiler using verilator
+2. Compile using verilator
 
 > verilator -Wno-LATCH -Wno-WIDTH --binary -j 0 --coverage --coverage-line --coverage-toggle --top-module signed_isqrt_tb problem1_tb.v signed_isqrt.v
 
 > ./obj_dir/Vsigned_isqrt_tb
 
-3. Calculate the coverage report
+3. Generate the coverage report
+   
 > verilator_coverage --annotate report coverage.dat
 
-4. Add the following text blow to the prompt and repeat the process, contrast the coverage
+4. Add the following CoT text below to the prompt and repeat the process, contrast the coverage
  
 > Use the following structured verification process:
 
