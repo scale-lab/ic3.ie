@@ -486,24 +486,33 @@ python3 run_crc8_tb_verilator.py
 --- 
 ## 2.5 Testbench generation with chain of thought
 
-You are an expert hardware verification engineer. Given the natural-language hardware specification below, generate a complete Verilog testbench for the following design.
+> You are an expert hardware verification engineer. Given the natural-language hardware specification below, generate a complete Verilog testbench for the following design.
+> Natural-Language Specification:
 
-Natural-Language Specification:
+> Write a combinational Verilog module named signed_isqrt to compute the integer square root of 
+> x, where  x is an input signed 16-bit integer and the output 
+> y is an unsigned 8-bit integer. Specifications:
 
-Write a combinational Verilog module named signed_isqrt to compute the integer square root of 
-x, where  x is an input signed 16-bit integer and the output 
-y is an unsigned 8-bit integer. Specifications:
+> x: Signed 16-bit input representing the value for integer square root computation (operational range: -32,768 to +32,767). Negative values should be handled as special cases and output 0.
+> y: Unsigned 8-bit output containing the computed integer square root value (operational range: 0 to 181 for valid positive inputs, 0 for negative inputs).
 
-x: Signed 16-bit input representing the value for integer square root computation (operational range: -32,768 to +32,767). Negative values should be handled as special cases and output 0.
-y: Unsigned 8-bit output containing the computed integer square root value (operational range: 0 to 181 for valid positive inputs, 0 for negative inputs).
+2. Compiler using verilator
 
+> verilator -Wno-LATCH -Wno-WIDTH --binary -j 0 --coverage --coverage-line --coverage-toggle --top-module signed_isqrt_tb problem1_tb.v signed_isqrt.v
 
-Use the following structured verification process:
+> ./obj_dir/Vsigned_isqrt_tb
 
-1. Extract Verification Requirements
-Identify all inputs, outputs, interfaces, clock/reset behavior, timing requirements, functional behavior, state transitions, constraints, error conditions, and corner cases.
-Convert each requirement into an explicit, testable verification requirement.
-Do not invent behavior that is not supported by the specification.
+3. Calculate the coverage report
+> verilator_coverage --annotate report coverage.dat
+
+4. Add the following text blow to the prompt and repeat the process, contrast the coverage
+ 
+> Use the following structured verification process:
+
+> 1. Extract Verification Requirements
+> Identify all inputs, outputs, interfaces, clock/reset behavior, timing requirements, functional behavior, state transitions, constraints, error conditions, and corner cases.
+> Convert each requirement into an explicit, testable verification requirement.
+> Do not invent behavior that is not supported by the specification.
 2. Define Expected Behavior
 Develop a functional reference model/golden model that independently represents what the DUT should produce.
 Determine what outputs should be checked for each input sequence.
