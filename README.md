@@ -486,7 +486,7 @@ python3 run_crc8_tb_verilator.py
 --- 
 ## 2.5 Testbench generation with chain of thought
 
-You are an expert hardware verification engineer. Given the natural-language hardware specification below, generate a complete Verilog testbench for the DUT.
+You are an expert hardware verification engineer. Given the natural-language hardware specification below, generate a complete Verilog testbench for the following design.
 
 Natural-Language Specification:
 
