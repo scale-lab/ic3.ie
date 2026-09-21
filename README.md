@@ -596,8 +596,215 @@ python3 run_crc8_tb_verilator.py
 You are hardware verification engineer expert. 
 - I created the Verilog testbench problem1_tb.v with top module problem1_tb.v to test the design signed_isqrt.v
 - Use verilator to calculate the coverage
-- analyze the coverage report 
-- modify the testbench to improve its coverage
-- keep on iterating until it is not possible to increase coverage
+- analyze the coverage report
+
+---
+# 3 Physical Design
+
+## 3.1 From Specs to GDSII with GenAI
+
+Write a synthesizable combinational Verilog module named `signed_isqrt` to
+compute the integer square root of `x`, where `x` is an input signed 16-bit
+integer and the output `y` is an unsigned 8-bit integer.
+
+- `x`: Signed 16-bit input representing the value for integer square root
+  computation (operational range: -32,768 to +32,767). Negative values
+  should be handled as special cases and output 0.
+- `y`: Unsigned 8-bit output containing the computed integer square root
+  value (operational range: 0 to 181 for valid positive inputs, 0 for
+  negative inputs).
+
+### Step 1: Write the RTL
+
+File: `flow/designs/src/signed_isqrt/signed_isqrt.v`
+
+Requirements:
+- Module name: exactly `signed_isqrt`.
+- Ports: `x` is a 16-bit input, `y` is an unsigned 8-bit output.
+- Declare `x` as plain `[15:0]` — do NOT use the `signed` keyword on the
+  port. Interpret the sign explicitly inside the module via `x[15]`.
+- Purely combinational: no clock, no `always @(posedge ...)`.
+- Synthesizable only: no `real`, no unbounded loops, no `$` system
+  functions in the datapath, no `initial` blocks for logic.
+- `x[15] == 1` (negative) → `y = 0`.
+- Use an algorithm suitable for combinational integer square root (e.g.
+  binary search / comparator tree over candidate bits), not `$sqrt`.
+- Add `` `timescale 1ns/1ps `` near the top of the file.
+
+### Step 2: Write the testbench
+
+File: `flow/designs/src/signed_isqrt/signed_isqrt_tb.v`
+
+Requirements:
+- Instantiate `signed_isqrt`, drive `x`, read `y`.
+- Compute expected values with an independent reference model (e.g. a
+  counting-search `function`), not a copy of the DUT's algorithm.
+- Cover at minimum: x=0, x=1, x=32767 (expect y=181), x=-1, x=-32768
+  (expect y=0), a perfect square in range (x=225, expect y=15), a
+  non-perfect square (x=200, expect y=14), 20+ randomized positive values,
+  5+ randomized negative values — each checked against the reference model.
+- On mismatch: `$display` input/expected/actual and increment an error count.
+- At the end: print exactly `TEST PASSED` if error count is 0, else exactly
+  `TEST FAILED` with the count. Call `$finish`.
+- Avoid width mismatches: explicitly size/widen values crossing between
+  16-bit signals and 32-bit `integer`/`$urandom_range` results (e.g.
+  `16'($urandom_range(0, 32767))`, sign-extend via
+  `{{16{xin[15]}}, xin}` when comparing against an `integer`).
+
+### Step 3: Simulate with Verilator — verification gate
+
+```bash
+cd flow/designs/src/signed_isqrt
+
+verilator --binary -Wall --timing \
+    -Wno-DECLFILENAME \
+    signed_isqrt.v signed_isqrt_tb.v \
+    --top-module signed_isqrt_tb \
+    -o signed_isqrt_tb_sim \
+    -Mdir obj_dir
+
+./obj_dir/signed_isqrt_tb_sim | grep -q "TEST PASSED" && echo GATE_PASS || echo GATE_FAIL
+```
+
+- If Verilator reports compile/lint errors: fix `signed_isqrt.v` or
+  `signed_isqrt_tb.v`, re-run. Do not suppress warnings.
+- If simulation prints `TEST FAILED`: analyze the mismatch output, fix
+  `signed_isqrt.v`, go back to Step 1, re-run Step 3.
+- Do not proceed to Step 4 unless the gate prints `GATE_PASS`.
+
+### Step 4: Synthesis and layout (Yosys + OpenROAD via ORFS)
+
+Only run this step after Step 3's gate passes.
+
+Create `flow/designs/sky130hd/signed_isqrt/config.mk`:
+
+```makefile
+export DESIGN_NAME = signed_isqrt
+export PLATFORM    = sky130hd
+
+export VERILOG_FILES = $(DESIGN_HOME)/src/$(DESIGN_NICKNAME)/signed_isqrt.v
+export SDC_FILE      = $(DESIGN_HOME)/$(PLATFORM)/$(DESIGN_NICKNAME)/constraint.sdc
+
+export CORE_UTILIZATION = 20
+export PLACE_DENSITY    = 0.50
+```
+
+Create `flow/designs/sky130hd/signed_isqrt/constraint.sdc`:
+
+```tcl
+set clk_period 10
+
+create_clock -name vclk -period $clk_period
+set_input_delay  [expr $clk_period * 0.3] -clock vclk [all_inputs]
+set_output_delay [expr $clk_period * 0.3] -clock vclk [all_outputs]
+```
+
+Run the flow:
+
+```bash
+cd flow
+source ../env.sh
+make DESIGN_CONFIG=./designs/sky130hd/signed_isqrt/config.mk
+```
+
+Verify the deliverable:
+
+```bash
+ls -la results/sky130hd/signed_isqrt/base/6_final.gds
+```
+
+- modify the testbench to improve its coverage and if needed keep on iterating until it is not possible to increase coverage
+- If synthesis fails: fix the RTL (Step 1), do not hand-edit the netlist.
+- If floorplan/placement fails to fit: lower `CORE_UTILIZATION`.
+- If routing ends with nonzero DRC violations: lower `CORE_UTILIZATION`
+  and/or `PLACE_DENSITY`, re-run.
+- If timing (WNS/TNS) is negative: report it.
+
+## Timing closure with agentic AI
+
+Goal: repair as much timing violation as possible with OpenROAD's built-in
+commands before relaxing `clk_period`. Only restructure the RTL if repair
+commands don't meaningfully help.
+
+### Step 1: Try OpenROAD's timing-repair knobs first
+
+Add to `flow/designs/sky130hd/signed_isqrt/config.mk` (do not touch
+`constraint.sdc` yet):
+
+```makefile
+export ENABLE_PLACE_REPAIR_TIMING = 1
+export TNS_END_PERCENT = 100
+export SKIP_PIN_SWAP = 0
+export SKIP_GATE_CLONING = 0
+export SKIP_BUFFER_REMOVAL = 0
+export SKIP_LAST_GASP = 0
+export SKIP_VT_SWAP = 0
+export SKIP_CRIT_VT_SWAP = 0
+```
+
+Re-run:
+
+```bash
+cd flow
+source ../env.sh
+make DESIGN_CONFIG=./designs/sky130hd/signed_isqrt/config.mk clean_all
+make DESIGN_CONFIG=./designs/sky130hd/signed_isqrt/config.mk
+```
+
+Compare new WNS/TNS in `reports/sky130hd/signed_isqrt/base/6_finish.rpt`
+against the Part 1 baseline. Pull the critical path:
+
+```bash
+grep -B2 -A1 "data arrival time" reports/sky130hd/signed_isqrt/base/6_finish.rpt
+```
+
+- If WNS/TNS improved meaningfully: keep these settings, re-check DRC = 0,
+  done — or iterate further on the same knobs.
+- If WNS/TNS barely changed AND the critical path's data arrival time is a
+  large multiple over budget (period minus I/O delay margin): this is a
+  structural problem (a chain of sequentially dependent logic), not
+  something repair commands can fix. Revert the config.mk additions above
+  and go to Step 6.
+- If arrival time is only slightly over budget: relaxing `clk_period`
+  directly (skip Step 6) is the more proportionate fix.
+
+### Step 2: Restructure the RTL to remove the dependency chain
+
+Only if Step 5 did not meaningfully help.
+
+Rewrite `signed_isqrt.v`'s internal implementation with a structure that
+has a shorter dependency chain, keeping the module name and port
+declarations byte-for-byte identical to Part 1 (same signed-port rule
+applies).
+
+- Re-run the **exact same, unmodified** Verilator command and testbench
+  from Part 1 Step 3. It must still print `TEST PASSED` — this is the
+  functional-equivalence check for the rewrite.
+
+Do not proceed to re-running the ORFS flow until Verilator confirms
+`TEST PASSED` on the rewritten RTL.
+
+### Step 3: Re-run the flow and decide on the remaining gap
+
+Revert any Step 5 config.mk additions (they're superseded by the RTL
+change), keep `constraint.sdc` unchanged, and re-run:
+
+```bash
+cd flow
+source ../env.sh
+make DESIGN_CONFIG=./designs/sky130hd/signed_isqrt/config.mk clean_all
+make DESIGN_CONFIG=./designs/sky130hd/signed_isqrt/config.mk
+```
+
+Compare WNS, TNS, DRC violation count, and `report_design_area` against the
+Part 1 baseline. Then choose one, explicitly, and report which was chosen:
+
+- Relax `clk_period` in `constraint.sdc` to close the remaining gap (should
+  now be a much smaller increase than would have been needed pre-restructure).
+- Accept the remaining negative slack if this is an exploratory run, and
+  report the real WNS/TNS numbers.
+- Restructure further (e.g. partial pipelining) if neither of the above is
+  acceptable — treat this as a design tradeoff to raise with the user, not
+  a unilateral decision.
 
 
