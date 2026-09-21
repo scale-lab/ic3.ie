@@ -604,6 +604,9 @@ You are hardware verification engineer expert.
 - I created the Verilog testbench problem1_tb.v with top module problem1_tb.v to test the design signed_isqrt.v
 - Use verilator to calculate the coverage
 - analyze the coverage report
+- modify the testbench to improve its coverage
+- keep on iterating until no further improvement is possible
+- 
 
 ---
 # 3 Physical Design
