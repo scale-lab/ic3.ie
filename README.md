@@ -231,7 +231,7 @@ and check the output
 
 Alternatively to steps 3-6, in your agentic setup, prompt the agent
 
-run verilator with the testbench and the design ventilator_ctrl.v and analyze the coverage
+> run verilator with the testbench and the design ventilator_ctrl.v and analyze the coverage
    
 ---
 ## 2.2 Verification using Verilog + Python 
@@ -326,6 +326,12 @@ behavior:
 
 ### Step 3 — Prompt the LLM to write the Python golden-model checker
 
+Install the golden-model dependency once:
+
+```bash
+pip install crc8
+```
+
 ```
 Write a standalone Python script check_crc8_golden.py (no cocotb, no
 simulator dependency) that:
@@ -343,11 +349,7 @@ simulator dependency) that:
   rows) if any mismatch.
 ```
 
-Install the golden-model dependency once:
 
-```bash
-pip install crc8
-```
 
 ### Step 4 — Run Verilator and produce the final validation output
 
