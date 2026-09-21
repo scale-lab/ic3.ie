@@ -220,13 +220,18 @@ The Medical Ventilator Pressure Controller (VPC) protects patient safety by cont
 Save the LLM outcome as ventilator_ctrl_tb.v
 
 2. Download the synthesizable module ventilator_ctrl.v
-3.  Compile Using Verilator
+3. Compile Using Verilator
  verilator -Wno-LATCH -Wno-WIDTH --binary --coverage --top-module ventilator_ctrl_tb ventilator_ctrl_tb.v ventilator_ctrl.v
-4. Run and check the output
+4. Run 
+./obj_dir/Vventilator_ctrl_tb
+and check the output
 5. Generate the coverage report
  verilator_coverage --annotate coverage_out coverage.dat
 6. Inspect coverage_out/ventilator_ctrl.v to check execution counts per line (lines with C0 indicate unexecuted branches).
 
+Alternatively to steps 3-6, in your agentic setup, prompt the agent
+
+run verilator with the testbench and the design ventilator_ctrl.v and analyze the coverage
    
 ---
 ## 2.2 Verification using Verilog + Python 
