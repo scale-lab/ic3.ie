@@ -611,6 +611,10 @@ You are hardware verification engineer expert.
 ---
 # 3 Physical Design
 
+Ensure that OpenROAD and OpenROAD flow scripts are installed. Installation instructions are available at OpenROAD website https://openroad.readthedocs.io/en/latest/.
+
+Open your IDE at the OpenROAD-flow-scripts folder
+
 ## 3.1 From Specs to GDSII with GenAI
 
 Write a synthesizable combinational Verilog module named `signed_isqrt` to
