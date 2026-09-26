@@ -824,4 +824,17 @@ Part 1 baseline. Then choose one, explicitly, and report which was chosen:
 ## 3.3 Design and Library exploration using ChipXplore
 
 
+1. Install ChipXplore https://github.com/scale-lab/ChipXplore
+2. Ensure to load the PDK SQL DB and the design graph neo4j DB
+3. Run ChipXplore python core/graph_flow/pdk_flow.py --model <model-name>, where <model-name> is model type. If you are not running a local model, ensure you fill the API keys in the .env file
+4. Try these examples
+   - how many cells are in the design?
+   - what is the total area?
+   - how many metal layers are in the process?
+   - is the first layer horizontal or vertical?
+   - what are the most frequently used cells?
+   - what is the total area of the most frequently used cell?
+   - what are the top 10 longest nets in the design and what are their lengths?
+   - which standard cells are connected to clknet_0_clk ( or substitute with one of the nets from previous question)
+   - what is the total area of the cells connected to clknet_0_clk
 
