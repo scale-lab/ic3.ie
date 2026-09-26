@@ -734,7 +734,7 @@ ls -la results/sky130hd/signed_isqrt/base/6_final.gds
   and/or `PLACE_DENSITY`, re-run.
 - If timing (WNS/TNS) is negative: report it.
 
-## Timing closure with agentic AI
+## 3.2 Timing closure with agentic AI
 
 Goal: repair as much timing violation as possible with OpenROAD's built-in
 commands before relaxing `clk_period`. Only restructure the RTL if repair
@@ -820,5 +820,8 @@ Part 1 baseline. Then choose one, explicitly, and report which was chosen:
 - Restructure further (e.g. partial pipelining) if neither of the above is
   acceptable — treat this as a design tradeoff to raise with the user, not
   a unilateral decision.
+
+## 3.3 Design and Library exploration using ChipXplore
+
 
 
